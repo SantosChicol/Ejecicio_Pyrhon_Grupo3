@@ -1,0 +1,53 @@
+int fnValidaFechasAH() {
+    //Validacion de fechas para historico de bloqueos levantados
+    if (MOVIMIENTOS_DEL != cwSPACES || MOVIMIENTOS_AL != cwSPACES) {
+        //Si ingreso solo una de las fecha debe pedir la otra
+        if (MOVIMIENTOS_DEL == cwSPACES || MOVIMIENTOS_DEL.IsNull()) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "INGRESAR FECHA INICIAL";
+            return CWER_FAIL;
+        }
+        if (MOVIMIENTOS_AL == cwSPACES || MOVIMIENTOS_AL.IsNull()) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "INGRESAR FECHA FINAL";
+            return CWER_FAIL;
+        }
+
+        //Validacion de formato de Fechas
+        if (fnValidaFormatoFecha(MOVIMIENTOS_DEL)) {
+            cwAttach(GD_MEN_PARTE2, ' ', "INICIAL");
+            return CWER_FAIL;
+        }
+        if (fnValidaFormatoFecha(MOVIMIENTOS_AL)) {
+            cwAttach(GD_MEN_PARTE2, ' ', "FINAL");
+            return CWER_FAIL;
+        }
+
+        //Valida que la fecha inicial no sea mayor a 1 año
+        if (fnValidaFechaAño(MOVIMIENTOS_DEL)) {
+            GD_CAMPO = "[FECHA INI]";
+            return CWER_FAIL;
+        }
+
+        cwDateFormat(MOVIMIENTOS_DEL, "DD/MM/CCYY", SD_FINIREL, "DAYNUM");
+        cwDateFormat(MOVIMIENTOS_AL, "DD/MM/CCYY", SD_FFINREL, "DAYNUM");
+
+        if (SD_FINIREL > WS_RELSI) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Inicial Mayor a Fecha Sistema";
+            return CWER_FAIL;
+        }
+        if (SD_FINIREL > SD_FFINREL) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Inicial Mayor a Fecha Final";
+            return CWER_FAIL;
+        }
+
+        if (SD_FFINREL > WS_RELSI) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Final Mayor a Fecha Sistema";
+            return CWER_FAIL;
+        }
+    }
+    return CWER_SUCCESS;
+}
