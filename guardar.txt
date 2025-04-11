@@ -1,0 +1,128 @@
+primera funcion TrnAHCBL_Main():
+
+ else {
+            //Mostrar listado de Bloqueos Levantados
+
+            if (fnValidaFechasAH()) {
+                goto Error_Exit;
+            }
+
+            cwFindFrom(P_AHABL, 0, dcwTRNSEQ, SD_OFICINA, SD_PRODUCTO, SD_MONEDA, SD_CUENTA, SD_NUMDOC);
+            while (!cwGetRow(P_AHABL)) {
+                if ((ahabl_HCU_OFICI != HCU_OFICI ||                              
+                    ahabl_HCU_PRODU != SD_PRODUCTO ||
+                    ahabl_HCU_MONED != SD_MONEDA ||
+                    ahabl_HCUNUMCUE != HCUNUMCUE)) {
+                    break;
+                }              
+                if (ahabl_HCOESTBLO != GC_BLOQUEA) {
+                    GD_FIN = GC_NO;
+                    ACO_BLOQU = ahabl_ACO_BLOQU;
+                    HCOESTBLO = ahabl_HCOESTBLO;                             
+                    cwCENTURY = cwZEROS;
+                    cwDateFormat(ahabl_HFEINIBLO, "DDMMYY", HFEINIVLO, "DD/MM/CCYY");
+                    if (cwSTATUS == GC_ASTERI) {
+                        HFEINIVLO = cwSPACES;
+                    }
+                    cwCENTURY = cwZEROS;
+                    cwDateFormat(ahabl_HFEEXPBLO, "DDMMYY", HFEEXPVLO, "DD/MM/CCYY");
+                    if (cwSTATUS == GC_ASTERI) {
+                        HFEEXPVLO = cwSPACES;
+                    }
+                    TNUDOCTRA = ahabl_TNUDOCTRA;
+                    TVA_MOVIM = ahabl_TVA_MOVIM;
+                    SD_NUMDOC = ahabl_TNUDOCTRA;
+                    DCO_USUARI = ahabl_USUARIO;
+
+                    if (!fnConsultaDesbloqueoAH(HCU_OFICI, HCUNUMCUE, HCUDIGVER, SD_MOVIDEL, SD_MOVIAL, SD_NUMDOC)) {
+                        if (!fnSiguienteElementoQuery(qryMine))
+                        {
+                            AGENCIA = daala_ACO_OFICI;
+                            SG_HORA = daala_AHO_INSTA;
+                        }
+                    } else {
+                        AGENCIA = ahabl_HCO_OFICINA;                        //ELSE AGREGADO PARA QUE AL BUSCAR LA AGENCIA SI LA TABLA DAALA NO TIENE INFORMACIÓN LA BUSQUE EN LA AHABL 
+                    }                                                       //cpadilla 26/02/2025
+
+                    //JEHERNANDEZG 18112024
+                    //Se agrega la consulta para obtener el motivo del bloqueo
+                    cwFindGetRow(dcwEQ, P_AAMTB, 0, ACO_BLOQU);
+
+                    if (cwSTATUS != GC_ASTERI) {
+                        ANO_BLOQU = aamtb_ANO_BLOQU;
+                    }
+
+                    else {
+                        ANO_BLOQU = cwSPACES;
+                    }
+
+                    ACCION = ACCION_DESBLOQ;
+                    SD_HORAE = SD_HORAS;
+                    SD_MINUE = SD_MINUS;
+                    SD_SEGUE = SD_SEGUS;
+                    HORA = SG_HORAE;
+                    SD_NUMDOC = SD_NUMDOC + GC_1;
+
+                    break;
+                }
+            }
+        }
+
+
+Funcion de validaciones:
+
+// JEHERNANDEZG 18112024 -------------------------------------
+// Rutina para validacion de fechas de desbloqueos
+int fnValidaFechasAH() {
+    //Validacion de fechas para historico de bloqueos levantados
+    if (MOVIMIENTOS_DEL != cwSPACES || MOVIMIENTOS_AL != cwSPACES) {
+        //Si ingreso solo una de las fecha debe pedir la otra
+        if (MOVIMIENTOS_DEL == cwSPACES || MOVIMIENTOS_DEL.IsNull()) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "INGRESAR FECHA INICIAL";
+            return CWER_FAIL;
+        }
+        if (MOVIMIENTOS_AL == cwSPACES || MOVIMIENTOS_AL.IsNull()) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "INGRESAR FECHA FINAL";
+            return CWER_FAIL;
+        }
+
+        //Validacion de formato de Fechas
+        if (fnValidaFormatoFecha(MOVIMIENTOS_DEL)) {
+            cwAttach(GD_MEN_PARTE2, ' ', "INICIAL");
+            return CWER_FAIL;
+        }
+        if (fnValidaFormatoFecha(MOVIMIENTOS_AL)) {
+            cwAttach(GD_MEN_PARTE2, ' ', "FINAL");
+            return CWER_FAIL;
+        }
+
+        //Valida que la fecha inicial no sea mayor a 1 año
+        if (fnValidaFechaAño(MOVIMIENTOS_DEL)) {
+            GD_CAMPO = "[FECHA INI]";
+            return CWER_FAIL;
+        }
+
+        cwDateFormat(MOVIMIENTOS_DEL, "DD/MM/CCYY", SD_FINIREL, "DAYNUM");
+        cwDateFormat(MOVIMIENTOS_AL, "DD/MM/CCYY", SD_FFINREL, "DAYNUM");
+
+        if (SD_FINIREL > WS_RELSI) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Inicial Mayor a Fecha Sistema";
+            return CWER_FAIL;
+        }
+        if (SD_FINIREL > SD_FFINREL) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Inicial Mayor a Fecha Final";
+            return CWER_FAIL;
+        }
+
+        if (SD_FFINREL > WS_RELSI) {
+            GD_MEN_CODIG = defER_FAIL;
+            GD_MEN_PARTE2 = "Fecha Final Mayor a Fecha Sistema";
+            return CWER_FAIL;
+        }
+    }
+    return CWER_SUCCESS;
+}
