@@ -1,0 +1,77 @@
+     //Verifica si hay que mostrar Bloqueos o Desbloqueos
+        if (HIST_DESB != GC_1) {
+            //Mostrar listado de Bloqueos
+
+        //: RECUPERA Y DESPLIEGA INFORMACION REQUERIDA                                                             
+        //:                                                                                                        
+            cwFindFrom(P_AHABL, 0, dcwTRNSEQ, SD_OFICINA, SD_PRODUCTO, SD_MONEDA, SD_CUENTA, SD_NUMDOC);
+            while (!cwGetRow(P_AHABL)) {
+                if ((ahabl_HCU_OFICI != HCU_OFICI ||
+                    //:   DW;       AHABL.HCU-PRODU  NOT =  HCU-PRODU  OR 14/11/92 G & T                                   
+                    //:   DW;       AHABL.HCU-MONED  NOT =  HCU-MONED  OR 14/11/92 G & T                                   
+                    ahabl_HCU_PRODU != SD_PRODUCTO ||
+                    ahabl_HCU_MONED != SD_MONEDA ||
+                    ahabl_HCUNUMCUE != HCUNUMCUE)) {
+                    break;
+                }
+                //VALIDACIÓN NUMDOC
+                if (SD_NUMDOC != cwZEROS) {
+                    if (SD_NUMDOC != ahabl_TNUDOCTRA) {
+                        continue;
+                    }
+                }
+                //:                                                                                                    
+                if (ahabl_HCOESTBLO != GC_DESBLOQ) {
+                    GD_FIN = GC_NO;
+                    ACO_BLOQU = ahabl_ACO_BLOQU;
+                    HCOESTBLO = ahabl_HCOESTBLO;
+                    //       MOVE;  AHABL.HFEINIBLO  HFEINIBLO                      :Y2K                               
+                    //       MOVE;  AHABL.HFEEXPBLO  HFEEXPBLO                      :Y2K                               
+                    cwCENTURY = cwZEROS;
+                    cwDateFormat(ahabl_HFEINIBLO, "DDMMYY", HFEINIVLO, "DD/MM/CCYY");
+                    if (cwSTATUS == GC_ASTERI) {
+                        HFEINIVLO = cwSPACES;
+                    }
+                    cwCENTURY = cwZEROS;
+                    cwDateFormat(ahabl_HFEEXPBLO, "DDMMYY", HFEEXPVLO, "DD/MM/CCYY");
+                    if (cwSTATUS == GC_ASTERI) {
+                        HFEEXPVLO = cwSPACES;
+                    }
+                    TNUDOCTRA = ahabl_TNUDOCTRA;
+                    TVA_MOVIM = ahabl_TVA_MOVIM;
+                    SD_NUMDOC = ahabl_TNUDOCTRA;
+                    DCO_USUARI = ahabl_USUARIO;
+
+                    //JEHERNANDEZG 18112024
+                   //Se incorpora consulta para obtener la agencia donde se genero el bloqueo
+                    if (!fnConsultaBloqueoAH(HCU_OFICI, HCUNUMCUE, HCUDIGVER, SD_NUMDOC)) {
+                        if (!fnSiguienteElementoQuery(qryMine)) {
+                            AGENCIA = daala_ACO_OFICI;
+                        }
+                    }else {
+                        AGENCIA = ahabl_HCO_OFICINA;                                 //ELSE AGREGADO PARA QUE AL BUSCAR LA AGENCIA SI LA TABLA DAALA NO TIENE INFORMACIÓN LA BUSQUE EN LA AHABL 
+                    }                                                                //cpadilla 26/02/2025
+
+                    //JEHERNANDEZG 18112024
+                    //Se agrega la consulta para obtener el motivo del bloqueo
+                    cwFindGetRow(dcwEQ, P_AAMTB, 0, ACO_BLOQU);
+
+                    if (cwSTATUS != GC_ASTERI) {
+                        ANO_BLOQU = aamtb_ANO_BLOQU;
+                    }
+
+                    else {
+                        ANO_BLOQU = cwSPACES;
+                    }
+
+                    ACCION = ACCION_BLOQ;
+                    SG_HORA = ahabl_HORA;
+                    SD_HORAE = SD_HORAS;
+                    SD_MINUE = SD_MINUS;
+                    SD_SEGUE = SD_SEGUS;
+                    HORA = SG_HORAE;
+                    SD_NUMDOC = SD_NUMDOC + GC_1;
+                    break;
+                }
+            }
+        }
