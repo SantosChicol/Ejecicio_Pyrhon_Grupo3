@@ -1,0 +1,69 @@
+// jcifuentes 20161108 -------------------------------------
+// Rutina que busca los bloqueos levantados en la tabla DAALA. 
+// Se generan nuevas columnas a partir del campo AVA_CAMPO de la tabla DAALA, 
+// donde la info en dichas columnas surge de parsear la cadena almacenada con la estructura SGREGDAALA 
+// con la que se guardo en la transaccion AC101 
+// y con ello identificar los datos de la cuenta y documento con el cual se realizo el desbloqueo
+// --------------------------------------------------------------------------
+int fnConsultaDesbloqueo(DimVar &prOFICINA, DimVar &prNUMCUENTA, DimVar &prDIGITO, DimVar &prFECHAINI, DimVar &prFECHAFIN, DimVar &prNUMDOC){	
+	static DimVar SD_FINI   _Char(8);		//Fecha inicio
+	static DimVar SD_FFIN   _Char(8);		//Fecha fin
+	
+	cwDateFormat(prFECHAINI ,"DD/MM/CCYY",SD_FINI,"CCYYMMDD");
+	cwDateFormat(prFECHAFIN ,"DD/MM/CCYY",SD_FFIN,"CCYYMMDD");
+
+	varQuery.Init();
+	fnAtachaAQuery(varQuery, " SELECT [*] FROM (  ");
+	fnAtachaAQuery(varQuery, " SELECT ACO_USUAR, ACO_ACCIO, ACO_OFICI, AVA_CAMPO2, PRODU, OFICI, NUMCUE, DIGITO, DOCTRA, DOCBLO, ");
+	fnAtachaAQuery(varQuery, "        VALORQTZ, AVA_LLAVE, AFE_INSTA, AFE_SISTE, AFE_SISTE_CCYYMMDD, ANO_CAMPO, AHO_INSTA, ACO_ISPEC, ACOTIPMEN, ACOMENSIS, ACO_TERMI  FROM (  ");
+	fnAtachaAQuery(varQuery, " 	SELECT ACO_USUAR, ACO_ACCIO, ACO_OFICI,   ");
+	fnAtachaAQuery(varQuery, "          AVA_CAMPO2,   ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2, 1, 3) PRODU,  ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2, 4, 3) OFICI,  ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2, 7, 7) NUMCUE,  ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2,14, 1) DIGITO,  ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2,15, 8) DOCTRA,  ");
+	fnAtachaAQuery(varQuery, "          Substring(AVA_CAMPO2,23, 8) DOCBLO,  ");
+	//mavasquez 03122020  se modifica DECIMAL(11,2) a DECIMAL(13,2)
+	fnAtachaAQuery(varQuery, "          CAST(Substring(AVA_CAMPO2,31,11)AS DECIMAL(13,2)) /100 VALORQTZ,  ");
+	fnAtachaAQuery(varQuery, "          AVA_LLAVE, AFE_INSTA, AFE_SISTE,   ");
+	fnAtachaAQuery(varQuery, "          CASE WHEN (AFE_SISTE % 100)>=57 THEN  ");
+	fnAtachaAQuery(varQuery, "              (((AFE_SISTE % 100) + 1900)*10000)	  ");
+	fnAtachaAQuery(varQuery, "          ELSE   ");
+	fnAtachaAQuery(varQuery, "              (((AFE_SISTE % 100) + 2000)*10000)  ");
+	fnAtachaAQuery(varQuery, "          END + ((( AFE_SISTE / 100 )%100) * 100) + CAST( AFE_SISTE / 10000 AS INT) AFE_SISTE_CCYYMMDD,  ");
+	fnAtachaAQuery(varQuery, "          ANO_CAMPO, AHO_INSTA, ACO_ISPEC, ACOTIPMEN, ACOMENSIS, ACO_TERMI  ");
+	fnAtachaAQuery(varQuery, " 	  FROM (  ");
+	fnAtachaAQuery(varQuery, "              SELECT  ACO_USUAR, ACO_ACCIO, ACO_OFICI,   ");
+	fnAtachaAQuery(varQuery, " 				        REPLACE( REPLACE(AVA_CAMPO, ' ', '0'), '.', '') AVA_CAMPO2,    ");
+	fnAtachaAQuery(varQuery, " 				        AVA_LLAVE, AFE_INSTA, AFE_SISTE, ANO_CAMPO, AHO_INSTA, ACO_ISPEC, ACOTIPMEN, ACOMENSIS, ACO_TERMI  ");
+	fnAtachaAQuery(varQuery, "              FROM DAALA WITH (NOLOCK)  ");
+	fnAtachaAQuery(varQuery, "              WHERE vP_DAALA = 0  ");
+	fnAtachaAQuery(varQuery, "                      AND ACO_ACCIO = 'MOD'  ");
+	fnAtachaAQuery(varQuery, "                      AND ACO_ISPEC = 'AC101'  ");
+	fnAtachaAQuery(varQuery, "          ) AS DAALA2  ");
+	fnAtachaAQuery(varQuery, " ) AS DAALA3  ");
+	fnAtachaAQuery(varQuery, " WHERE ");
+	fnAtachaCampo(varQuery,	 "     ", "OFICI" , " = RIGHT('000'+LTRIM(RTRIM( "    , prOFICINA  );  fnAtachaAQuery(varQuery, " )),3)  ");
+	fnAtachaCampo(varQuery,	 " AND ", "NUMCUE", " = RIGHT('0000000'+LTRIM(RTRIM( ", prNUMCUENTA);  fnAtachaAQuery(varQuery, " )),7)  ");
+	fnAtachaCampo(varQuery,	 " AND ", "DIGITO", " = "                             , prDIGITO   );
+	//fnAtachaCampo(varQuery,	 " AND ", "DOCBLO", " >= RIGHT('00000000'+LTRIM(RTRIM( ", prNUMDOC);  fnAtachaAQuery(varQuery, " )),8)  ");
+	if (prNUMDOC != cwZEROS) {
+		fnAtachaCampo(varQuery, " AND ", "DOCBLO", " >= RIGHT('00000000'+LTRIM(RTRIM( ", prNUMDOC);  fnAtachaAQuery(varQuery, " )),8)  ");
+	}
+	if (prFECHAINI!=cwSPACES && prFECHAFIN!=cwSPACES){
+		fnAtachaBetween(varQuery,"AND", "AFE_SISTE_CCYYMMDD", SD_FINI, SD_FFIN);
+	}
+	fnAtachaAQuery(varQuery, " ) AS DAALA4  ORDER BY DOCBLO, AFE_SISTE_CCYYMMDD  ");
+
+	if(fnPreparaExec(varQuery))
+		return CWER_FAIL;
+
+	if ( fnIniciaQuery(qryMine) ){
+		GD_MEN_CODIG  = defER_GL_FAIL ;
+		GD_MEN_PARTE2 = defER_NOT_EXIST;
+		return CWER_FAIL;
+	}
+
+	return CWER_SUCCESS;
+}
