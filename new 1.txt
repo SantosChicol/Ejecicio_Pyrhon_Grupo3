@@ -1,0 +1,46 @@
+//jcifuentes 20161109
+/* =============================================================================
+   Valida que Fecha no sea Mayor a 1 año
+   ============================================================================= */
+int fnValidaFechaAño(DimVar &prFecha){
+	// Leer la fecha del Sistema y convertir a fecha de 8 digitos
+	cwDateFormat(WS_RELSI,"DAYNUM",GD_FECHA8,"DDMMCCYY");
+
+	//Separar fecha del sistema en AÑO y MES
+	SD_ANO1 = GD_FECHA8.At(5,4,true);
+	SD_MES1 = GD_FECHA8.At(3,2,true);
+	
+
+	// Convertir fecha de parametro, a fecha de 8 digitos
+	cwCENTURY = cwZEROS ;
+	cwDateFormat (prFecha,"DD/MM/CCYY",GD_FECHA8,"DDMMCCYY") ;
+	cwTOTAL = cwToDayNumber (GD_FECHA8);
+	if ( cwSTATUS == GC_ASTERI ) {
+		GD_MEN_CODIG  = defER_FAIL;
+		GD_MEN_PARTE2 = "Error en Fecha";
+		return CWER_FAIL;
+	}
+
+	//Separar fecha de parametro en AÑO y MES
+	SD_ANO2 = GD_FECHA8.At(5,4,true);
+	SD_MES2 = GD_FECHA8.At(3,2,true);
+
+	
+	//Compara años
+	if( (SD_ANO1 - SD_ANO2) == 0 ){
+		return CWER_SUCCESS;
+	} else if ((SD_ANO1 - SD_ANO2) == 1){
+		//necesita comparar meses
+		if(SD_MES1>=SD_MES2){
+			GD_MEN_CODIG  = defER_FAIL;
+			GD_MEN_PARTE2 = "Fecha incorrecta, maximo 1 año atras";
+			return CWER_FAIL;
+		}
+	} else { //fechas mayores a 1 año
+		GD_MEN_CODIG  = defER_FAIL;
+		GD_MEN_PARTE2 = "Fecha incorrecta, maximo 1 año atras";
+		return CWER_FAIL;
+	}
+
+	return CWER_SUCCESS;
+}
