@@ -1,0 +1,28 @@
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_MjZiODA1ZTktZDFmZS00YmM3LWFkZDQtNDFkYzdkZWU2ZDU2%40thread.v2/0?context=%7b%22Tid%22%3a%224f1d8a3a-c21d-4415-9a3e-d743e350dc3c%22%2c%22Oid%22%3a%2225cbe3d5-c57e-4624-86a4-28eeded7af2e%22%7d
+
+
+
+
+
+
+041 
+0507614
+7
+00000000
+00000000001  000
+AC101
+
+
+
+
+					SG_HORA = acabl_HORA;			// Hora agregada que viene de la tabla ACABL a la variable de grupo SG_HORA   
+													// SVCHICOLA - 17JUNIO2025 - DP606517	
+
+
+
+
+
+
+
+
+
