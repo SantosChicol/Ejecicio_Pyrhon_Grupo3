@@ -1,0 +1,43 @@
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_NThmOTcwMTEtMGZlNy00NWQxLWI3YzgtZjE1NjUzMDVmMjcz%40thread.v2/0?context=%7b%22Tid%22%3a%224f1d8a3a-c21d-4415-9a3e-d743e350dc3c%22%2c%22Oid%22%3a%2298bb5d98-4fbc-441c-b9cf-970eee44334a%22%7d
+
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_NDVlY2RlYjItNWUxNi00MDk1LWI1ZGEtM2U0MDE1YjllNmVl%40thread.v2/0?context=%7b%22Tid%22%3a%224f1d8a3a-c21d-4415-9a3e-d743e350dc3c%22%2c%22Oid%22%3a%225cd8679b-5f15-4243-abdc-2625892071a3%22%7d
+
+
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDhiYmUwMTAtMWI2Mi00MTVkLThmNTktZjU2YWI3MDMxNDAz%40thread.v2/0?context=%7b%22Tid%22%3a%224f1d8a3a-c21d-4415-9a3e-d743e350dc3c%22%2c%22Oid%22%3a%2298bb5d98-4fbc-441c-b9cf-970eee44334a%22%7d
+
+
+041 
+0507614
+7
+00000000
+00000000001  000
+AC101
+
+
+
+
+tomar los DP 2
+PULL REQUEST  A LA NUEVA RAMA
+
+PARA LOS DOS DP - Unificar funcionalidades 
+
+
+637715   PBI Mes de Julio
+
+
+
+
+
+Funciones para conversiones para tipos de datos y como se puede implementar, procedimientos almacenados.
+Buqueda tablas hash mejoria en la busqueda de datos y que arboles utiliza.
+
+Gerson de la Cruz
+
+
+PROBLEMAS:
+
+https://learn.microsoft.com/es-es/troubleshoot/sql/database-engine/install/windows/issues-upgrading-sql-server-2022
+
+Cristian Sea - Imprimir Hojas - Gerson de la cruz
+
+
